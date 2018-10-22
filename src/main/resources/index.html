@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ITP 2.0 Tester</title>
+    <style type="text/css">
+        iframe { display: block; margin: none; padding: none; border: none; width: 100%; line-height: 0; }
+        img { width: 10px; height: 10px; }
+        table {
+            width: 100%;
+            position: relative;
+            display: inline-table;
+            border: none;
+        }
+        thead {
+            background-color: #b0b0b0;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2
+        }
+        td, td * {
+            max-height: 50px !important;
+            vertical-align: bottom;
+            text-align: left;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th width="40%">
+                    Test
+                </th>
+                <th colspan="3">
+                    Results
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    (Reference): IMG tag in 1st party iFrame
+                </td>
+                <td colspan="3">
+                    <iframe src="${FIRST_PARTY_HOST}/iframe1/img/REF_TAG"></iframe>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    IMG tag in top frame
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+                <td>
+                    Referrer: <img src="${THIRD_PARTY_HOST}/img/REF_TAG.png"/>
+                </td>
+                <td>
+                    Cookie: <img src="${THIRD_PARTY_HOST}/img.png"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    IMG tag in 3rd party iFrame
+                </td>
+                <td colspan="3">
+                    <iframe src="${THIRD_PARTY_HOST}/iframe3/img/REF_TAG"></iframe>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    XMLHttpRequest GET in top frame
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+                <td id="top_get_img_referer">
+                    Referrer:
+                </td>
+                <td id="top_get_img_cookie">
+                    Cookie:
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    XMLHttpRequest GET in 3rd party iFrame
+                </td>
+                <td colspan="3">
+                    <iframe src="${THIRD_PARTY_HOST}/iframe3/get/img/REF_TAG"></iframe>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    XMLHttpRequest POST in top frame
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+                <td id="top_post_img_referer">
+                    Referrer:
+                </td>
+                <td id="top_post_img_cookie">
+                    Cookie:
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    XMLHttpRequest POST in 3rd party iFrame
+                </td>
+                <td colspan="3">
+                    <iframe src="${THIRD_PARTY_HOST}/iframe3/post/img/REF_TAG"></iframe>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>
+        Current session cookie value: ${COOKIE}
+        <form action="${FIRST_PARTY_HOST}/postInitCookies">
+            Interaction for 1st party cookies: <input type="submit" value="1st party">
+        </form>
+        <a href="${THIRD_PARTY_HOST}/initCookies.html">Initialize 1st party cookies in ${THIRD_PARTY_HOST}</a>
+    </p>
+    <script type="application/javascript">
+        function getImage(resource, method, elementId) {
+            var xhr = new XMLHttpRequest();
+            xhr.open(method, resource, true);
+            xhr.responseType = 'blob';
+            xhr.onload = function(e) {
+                if (this.status == 200) {
+                    var blob = this.response;
+                    var img = document.createElement('img');
+                    img.onload = function(e) {
+                        window.URL.revokeObjectURL(img.src); // clean up after yourself
+                    };
+                    img.src = window.URL.createObjectURL(blob);
+                    document.getElementById(elementId).appendChild(img);
+                    //document.body.appendChild(img);
+                }
+            };
+            xhr.send();
+        }
+
+        getImage("${THIRD_PARTY_HOST}/img/REF_TAG.png", "GET", "top_get_img_referer");
+        getImage("${THIRD_PARTY_HOST}/img.png", "GET", "top_get_img_cookie");
+        getImage("${THIRD_PARTY_HOST}/img/REF_TAG.png", "POST", "top_post_img_referer");
+        getImage("${THIRD_PARTY_HOST}/img.png", "POST", "top_post_img_cookie");
+    </script>
+</body>
+</html>

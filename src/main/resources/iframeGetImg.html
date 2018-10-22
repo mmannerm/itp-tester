@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style type="text/css">
+        html, body { padding: 0; margin: 0; }
+        img { width: 10px; height: 10px; }
+        table { padding: 0; width: 100%; border: none; }
+    </style>
+</head>
+<body>
+<table>
+    <tr>
+        <td>
+            Frame Referrer: <div style="display: inline-block; width: 10px; height: 10px; background-color: ${REFCOLOR}"></div>
+        </td>
+        <td id="referer">
+            Referrer:
+        </td>
+        <td id="cookie">
+            Cookie:
+        </td>
+    </tr>
+</table>
+<script type="application/javascript">
+        function getImage(resource, elementId) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("${METHOD}", resource, true);
+            xhr.responseType = 'blob';
+            xhr.onload = function(e) {
+                if (this.status == 200) {
+                    var blob = this.response;
+                    var img = document.createElement('img');
+                    img.onload = function(e) {
+                        window.URL.revokeObjectURL(img.src); // clean up after yourself
+                    };
+                    img.width = 10;
+                    img.height = 10;
+                    img.src = window.URL.createObjectURL(blob);
+                    document.getElementById(elementId).appendChild(img);
+                    //document.body.appendChild(img);
+                }
+            };
+            xhr.send();
+        }
+
+        getImage("${HOST}/img/REF_TAG.png", "referer");
+        getImage("${HOST}/img.png", "cookie");
+    </script>
+</body>
+</html>
